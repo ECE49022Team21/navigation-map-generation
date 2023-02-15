@@ -10,8 +10,11 @@ import pyrosm
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import os
 
 np.float = float
+
+out_dir = "outputs"
 
 """
 landmark struct:
@@ -28,7 +31,7 @@ landmark_t
 
 
 def write_landmarks_header(landmark_list, adj_dict, dist_dict, landmarks):
-    with open("landmarks.h", "w") as f:
+    with open(f"{out_dir}/landmarks.h", "w") as f:
         f.write("#ifndef LANDMARKS_HEADER_FILE_G\n")
         f.write("#define LANDMARKS_HEADER_FILE_G\n")
         f.write(f"#define LEN_LANDMARKS {len(landmark_list)}\n")
@@ -59,7 +62,7 @@ typedef struct {
 
 
 def write_landmarks_c(landmark_list, adj_dict, dist_dict, landmarks):
-    with open("landmarks.c", "w") as f:
+    with open(f"{out_dir}/landmarks.c", "w") as f:
         f.write('#include "landmarks.h"\n')
         for key, value in adj_dict.items():
             array_string = "{" + value.__str__()[1:-1] + "}"
@@ -150,7 +153,6 @@ def generate_k_d_tree(landmark_list):
     axis = depth % 2
     if axis == 0:
         sort_x(landmark_list)
-    if
 
     return k
 
@@ -169,9 +171,11 @@ def local_small():
     osm = pyrosm.OSM(fp)
     buildings = osm.get_buildings()
     print(buildings)
-    plot = buildings.plot()
+    plot = buildings.plot(figsize=(20,20))
+    pathways = osm.get_network()
+    pathways.plot(ax=plot, color="green")
     fig = plot.get_figure()
-    fig.savefig("map.png")
+    fig.savefig(f"{out_dir}/map-all-buildings.png")
 
 
 def create_map(buildings, centroids, pathways, G):
@@ -190,36 +194,63 @@ def create_map(buildings, centroids, pathways, G):
     networkx.draw_networkx_edges(G, pos=pos)
     networkx.draw_networkx_edge_labels(
         G, pos=pos, edge_labels=labels, font_size=7, alpha=0.5)
-    fig.savefig("map.png")
+    fig.savefig(f"{out_dir}/map.png")
 
 
 def do_network(osm):
     nodes, edges = osm.get_network(nodes=True)
     print(nodes)
     print(edges)
-    nodes.to_csv('nodes.csv')
-    edges.to_csv('edges.csv')
+    nodes.to_csv(f'{out_dir}/nodes.csv')
+    edges.to_csv(f'{out_dir}/edges.csv')
 
     G = osm.to_graph(nodes, edges, graph_type="networkx")
     print(G)
     print(G.graph)
-    networkx.write_adjlist(G, "adj_list.txt")
-    networkx.write_multiline_adjlist(G, "adj_list_multi.txt")
+    networkx.write_adjlist(G, f"{out_dir}/adj_list.txt")
+    networkx.write_multiline_adjlist(G, f"{out_dir}/adj_list_multi.txt")
     G_undirected = G.to_undirected()
     print(G_undirected)
-    networkx.write_adjlist(G_undirected, "undirected_adj_list.txt")
+    networkx.write_adjlist(G_undirected, f"{out_dir}/undirected_adj_list.txt")
     networkx.write_multiline_adjlist(
-        G_undirected, "undirected_adj_list_multi.txt")
+        G_undirected, f"{out_dir}/undirected_adj_list_multi.txt")
 
     for (n1, n2, d) in G_undirected.edges(data=True):
         length = d['length']
         d.clear()
         d['length'] = length
     networkx.write_multiline_adjlist(
-        G_undirected, "less_undirected_adj_list_multi.txt")
+        G_undirected, f"{out_dir}/less_undirected_adj_list_multi.txt")
+
+def make_pyvis(G):
+    net = Network(height="1000px", width="1000px", directed=False)
+    """
+    net.set_options('''
+    var options = {
+      "physics": {
+        "barnesHut": {
+          "gravitationalConstant":-2000,
+          "centralGravity": 0.5,
+          "springLength": 0,
+          "springConstant": 0.015,
+          "damping": 0.09,
+          "avoidOverlap": 0
+        },
+        "maxVelocity:":50,
+        "minVelocity": 0.75,
+        "timestep": 0.5
+      }
+    }
+    ''')
+    """
+    net.from_nx(G)
+    net.show_buttons(filter_=['physics'])
+    net.show(f"{out_dir}/example.html")
 
 
 def main():
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
     fp = 'purdue_map-all.osm.pbf'
     # bounding_box = [40.4241731, -86.9166476, 40.4313206, -86.9104916]
     bounding_box = [-86.9166476, 40.4241731, -86.9104916, 40.4313206]
@@ -238,8 +269,6 @@ def main():
 
     pathways = osm.get_network()
 
-    # buildings.to_csv("buildings.csv")
-    # pathways.to_csv('pathways.csv')
     print(buildings.crs)
 
     G = networkx.Graph()
@@ -273,50 +302,16 @@ def main():
         data.pop("geometry")
         data.pop("centroid")
     # G = G.to_undirected()
-    net = Network(height="1000px", width="1000px", directed=False)
-    """
-    net.set_options('''
-    var options = {
-      "physics": {
-        "barnesHut": {
-          "gravitationalConstant":-2000,
-          "centralGravity": 0.5,
-          "springLength": 0,
-          "springConstant": 0.015,
-          "damping": 0.09,
-          "avoidOverlap": 0
-        },
-        "maxVelocity:":50,
-        "minVelocity": 0.75,
-        "timestep": 0.5
-      }
-    }
-    ''')
-    """
-    net.from_nx(G)
-    net.show_buttons(filter_=['physics'])
-    # net.show("example.html")
 
     create_map(buildings, centroids, pathways, G)
+    buildings.to_csv(f"{out_dir}/buildings.csv")
+    pathways.to_csv(f'{out_dir}/pathways.csv')
+    local_small()
+    do_network(osm)
+    # make_pyvis(G)
     write_c_array(G)
 
     return
-    osm = pyrosm.OSM(fp)
-    buildings = osm.get_buildings()
-    buildings = buildings[buildings['name'].notna()]
-
-    # better way to filter
-    buildings = buildings[buildings['building'] != 'yes']
-    buildings = buildings[buildings['building'] != 'no']
-
-    centroids = buildings['geometry'].centroid
-    buildings = buildings.assign(centroids=centroids)
-    print(buildings.columns)
-    buildings = buildings[['name', 'building', 'geometry', 'centroids']]
-
-    pathways = osm.get_network()
-
-    buildings.to_csv("buildings_all.csv")
 
 
 if __name__ == "__main__":

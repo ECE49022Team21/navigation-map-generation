@@ -1,8 +1,5 @@
 .idea
-*.png
-*.html
-*.csv
-*.txt
+outputs
 pyrosm
 venv
 *.osm
