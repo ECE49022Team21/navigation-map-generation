@@ -1,0 +1,9 @@
+.idea
+*.png
+*.html
+*.csv
+*.txt
+pyrosm
+venv
+*.osm
+lib
