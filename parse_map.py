@@ -170,7 +170,7 @@ def local_small():
     fp = 'purdue_map-all.osm.pbf'
     osm = pyrosm.OSM(fp)
     buildings = osm.get_buildings()
-    print(buildings)
+    # print(buildings)
     plot = buildings.plot(figsize=(20,20))
     pathways = osm.get_network()
     pathways.plot(ax=plot, color="green")
@@ -205,12 +205,12 @@ def do_network(osm):
     edges.to_csv(f'{out_dir}/edges.csv')
 
     G = osm.to_graph(nodes, edges, graph_type="networkx")
-    print(G)
-    print(G.graph)
+    # print(G)
+    # print(G.graph)
     networkx.write_adjlist(G, f"{out_dir}/adj_list.txt")
     networkx.write_multiline_adjlist(G, f"{out_dir}/adj_list_multi.txt")
     G_undirected = G.to_undirected()
-    print(G_undirected)
+    # print(G_undirected)
     networkx.write_adjlist(G_undirected, f"{out_dir}/undirected_adj_list.txt")
     networkx.write_multiline_adjlist(
         G_undirected, f"{out_dir}/undirected_adj_list_multi.txt")
@@ -264,7 +264,7 @@ def main():
 
     centroids = buildings['geometry'].centroid
     buildings = buildings.assign(centroids=centroids)
-    print(buildings.columns)
+    # print(buildings.columns)
     buildings = buildings[['name', 'building', 'geometry', 'centroids']]
 
     pathways = osm.get_network()
@@ -295,7 +295,7 @@ def main():
             centroid = transform(project.transform, data["centroid"])
             shape = transform(project.transform, other_data["geometry"])
             dist = centroid.distance(shape)
-            print(dist)
+            # print(dist)
             if dist < 100:
                 G.add_edge(node, other_node, dist=dist, title=dist)
     for node, data in G.nodes(data=True):
