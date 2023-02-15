@@ -171,7 +171,7 @@ def local_small():
     osm = pyrosm.OSM(fp)
     buildings = osm.get_buildings()
     # print(buildings)
-    plot = buildings.plot(figsize=(20,20))
+    plot = buildings.plot(figsize=(20, 20))
     pathways = osm.get_network()
     pathways.plot(ax=plot, color="green")
     fig = plot.get_figure()
@@ -222,6 +222,7 @@ def do_network(osm):
     networkx.write_multiline_adjlist(
         G_undirected, f"{out_dir}/less_undirected_adj_list_multi.txt")
 
+
 def make_pyvis(G):
     net = Network(height="1000px", width="1000px", directed=False)
     """
@@ -245,7 +246,7 @@ def make_pyvis(G):
     """
     net.from_nx(G)
     net.show_buttons(filter_=['physics'])
-    net.show(f"{out_dir}/example.html")
+    net.show(f"{out_dir}/pyvis-map.html")
 
 
 def main():
