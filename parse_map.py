@@ -28,7 +28,7 @@ landmark_t
 
 
 def write_landmarks_header(landmark_list, adj_dict, dist_dict, landmarks):
-    with open("../stm32-navigation/landmarks.h", "w") as f:
+    with open("landmarks.h", "w") as f:
         f.write("#ifndef LANDMARKS_HEADER_FILE_G\n")
         f.write("#define LANDMARKS_HEADER_FILE_G\n")
         f.write(f"#define LEN_LANDMARKS {len(landmark_list)}\n")
@@ -59,7 +59,7 @@ typedef struct {
 
 
 def write_landmarks_c(landmark_list, adj_dict, dist_dict, landmarks):
-    with open("../stm32-navigation/landmarks.c", "w") as f:
+    with open("landmarks.c", "w") as f:
         f.write('#include "landmarks.h"\n')
         for key, value in adj_dict.items():
             array_string = "{" + value.__str__()[1:-1] + "}"
