@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import os
+from shapely.geometry import Point
+import binarytree
 
 np.float = float
 
@@ -129,17 +131,11 @@ def generate_structs(G):
 
 
 def generate_k_d_tree(landmark_list):
+    IS_NONE = 255
+    assert (len(landmark_list) - 1 < IS_NONE)
     k = []
+    root = None
     depth = 0
-
-    def parent(i):
-        return (i - 1) // 2
-
-    def left_child(i):
-        return 2*i + 1
-
-    def right_child(i):
-        return 2*i+2
 
     def sort_x(landmark_list):
         landmark_list.sort(key=lambda x: x["x"])
@@ -150,11 +146,67 @@ def generate_k_d_tree(landmark_list):
     def median_split(landmark_list):
         return len(landmark_list) // 2
 
-    axis = depth % 2
-    if axis == 0:
-        sort_x(landmark_list)
+    """
+    project = pyproj.Transformer.from_proj(
+        pyproj.Proj(init='epsg:4326'),  # source coordinate system
+        pyproj.Proj(init='epsg:26913'))  # destination coordinate system
 
-    return k
+    for d in landmark_list:
+        p = Point(d["x"], d["y"])
+        new_p = transform(project.transform, p)
+        d['x'] = new_p.x
+        d['y'] = new_p.y
+    """
+
+    # Start with x
+    def k_d_tree(landmark_list, depth):
+        if len(landmark_list) == 0:
+            return None
+        if len(landmark_list) == 1:
+            return binarytree.Node(landmark_list[0]["i"])
+        root = None
+        axis = depth % 2
+        if axis == 0:
+            sort_x(landmark_list)
+        else:
+            sort_y(landmark_list)
+
+        i = median_split(landmark_list)
+        root = binarytree.Node(landmark_list[i]["i"])
+        root.left = k_d_tree(landmark_list[0:i], depth+1)
+        root.right = k_d_tree(landmark_list[i+1:], depth+1)
+        return root
+    root = k_d_tree(landmark_list, depth)
+    print(root.values)
+    print(root)
+    for i in root.values:
+        if i is None:
+            k.append(IS_NONE)
+        else:
+            k.append(i)
+    return k, root
+
+
+def write_k_d_tree(k):
+    with open(f"{out_dir}/k_d_tree.h", "w") as f:
+        f.write(
+"""#ifndef K_D_TREE_HEADER
+#define K_D_TREE_HEADER
+typedef int uint8_t;
+extern uint8_t k_d_tree[];
+#endif
+"""
+        )
+    with open(f"{out_dir}/k_d_tree.c", "w") as f:
+        f.write('#include "k_d_tree.h"\n')
+        f.write("uint8_t k_d_tree[] = {\n")
+        to_write = []
+        for i in range(0, len(k), 10):
+            array_string = k[i:i+10].__str__()[1:-1] + ',\n'
+            to_write.append(array_string)
+        to_write[-1] = to_write[-1][:-2] + '\n'
+        f.writelines(to_write)
+        f.write("};\n")
 
 
 def write_c_array(G):
@@ -164,6 +216,10 @@ def write_c_array(G):
     landmark_list.sort(key=lambda x: x["i"])
     write_landmarks_header(landmark_list, adj_dict, dist_dict, landmarks)
     write_landmarks_c(landmark_list, adj_dict, dist_dict, landmarks)
+
+    # This permanently changes landmark list so do this last
+    k, root = generate_k_d_tree(landmark_list)
+    write_k_d_tree(k)
 
 
 def local_small():

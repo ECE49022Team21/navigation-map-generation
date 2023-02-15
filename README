@@ -1,4 +1,5 @@
 This is testcode mainly that looks at maps and generates C code.
+This is NOT meant for production and are only utility scripts. 
 
 Note the C code generated includes typedefs so it can run on amd64 architecture and should be changed when porting
 to the stm32
@@ -7,4 +8,6 @@ This also uses a venv.
 Please run 'install' to setup the venv
 
 Run 'update_requirements' if a package is updated in the venv
+
+Before running, make sure to source the venv
 
