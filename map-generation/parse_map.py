@@ -190,9 +190,10 @@ def generate_k_d_tree(landmark_list):
 def write_k_d_tree(k):
     with open(f"{out_dir}/k_d_tree.h", "w") as f:
         f.write(
-"""#ifndef K_D_TREE_HEADER
+f"""#ifndef K_D_TREE_HEADER
 #define K_D_TREE_HEADER
 typedef int uint8_t;
+#define MAX_LEN_K_D_TREE {len(k)}
 extern uint8_t k_d_tree[];
 #endif
 """
