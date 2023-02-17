@@ -3,8 +3,8 @@
 #define LEN_LANDMARKS 40
 
 typedef float float32_t;
-typedef unsigned int uint32_t;
-typedef unsigned int uint8_t;
+typedef int uint32_t;
+typedef int uint8_t;
         
 typedef struct {
     float32_t x;

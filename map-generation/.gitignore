@@ -4,3 +4,4 @@ pyrosm
 venv
 *.osm
 lib
+a.out

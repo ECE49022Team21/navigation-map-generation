@@ -90,8 +90,8 @@ def generate_structs(G):
     landmarks = {}
     i = 0
     for node, data in G.nodes(data=True):
-        x = round(data["x"], 8)
-        y = round(data["y"], 8)
+        x = round(data["proj_x"], 8)
+        y = round(data["proj_y"], 8)
         name = data["name"]
         name = re.sub("[\(\[].*?[\)\]]", "", name).lower().strip()
         name = re.sub("-|_", " ", name)
@@ -356,7 +356,12 @@ def main():
             # print(dist)
             if dist < 100:
                 G.add_edge(node, other_node, dist=dist, title=dist)
+
+    # update to epsg:26913
     for node, data in G.nodes(data=True):
+        new_centroid = transform(project.transform, data["centroid"])
+        data["proj_x"] = new_centroid.x
+        data["proj_y"] = new_centroid.y
         data.pop("geometry")
         data.pop("centroid")
     # G = G.to_undirected()
