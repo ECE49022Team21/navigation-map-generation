@@ -2,7 +2,7 @@
 #include "landmarks.h"
 #include <stdio.h>
 
-uint8_t path[MAX_PATH_LENGTH];
+int path[MAX_PATH_LENGTH];
 
 // Min Heap using array implementation of binary tree
 int is_empty(int size) {
@@ -87,7 +87,7 @@ uint8_t get_min(uint8_t* heap) {
 }
 
 
-void get_path(uint8_t* prev, int destination) {
+void get_path(int* prev, int destination) {
     for (int i = 0; i < MAX_PATH_LENGTH; i++) {
         path[i] = -1;
     }
@@ -114,13 +114,14 @@ void get_path(uint8_t* prev, int destination) {
             path[k] = -1;
         }
     }
-    printf("Path: \n");
+    printf("Path: \n\r");
     for (int i = 0; i < MAX_PATH_LENGTH; i++) {
         if (path[i] == -1) {
             break;
         }
-        printf("%d: %s\n", path[i], landmarks[path[i]].name);
+        printf("%d: %s\n\r", path[i], landmarks[path[i]].name);
     }
+    printf("\n\r");
 }
 
 void print_heap(uint8_t* heap, int size) {
@@ -169,7 +170,7 @@ void dijkstra(int source, int destination) {
 
     //Dijkstra data
     float32_t dist[LEN_LANDMARKS];
-    uint8_t prev[LEN_LANDMARKS];
+    int prev[LEN_LANDMARKS];
 
     int node_heap_index[LEN_LANDMARKS];
 
@@ -207,8 +208,6 @@ void dijkstra(int source, int destination) {
         //print_prev(prev);
         //print_dist(dist);
     }
-    print_dist(dist);
-    print_prev(prev);
     get_path(prev, destination);
 }
 

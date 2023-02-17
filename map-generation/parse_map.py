@@ -37,11 +37,9 @@ def write_landmarks_header(landmark_list, adj_dict, dist_dict, landmarks):
         f.write("#ifndef LANDMARKS_HEADER_FILE_G\n")
         f.write("#define LANDMARKS_HEADER_FILE_G\n")
         f.write(f"#define LEN_LANDMARKS {len(landmark_list)}\n")
-        f.write("""
-typedef float float32_t;
-typedef int uint32_t;
-typedef int uint8_t;
-        """)
+        f.write('''
+#include "custom_typedef.h"
+        ''')
         f.write("""
 typedef struct {
     float32_t x;
@@ -190,9 +188,12 @@ def generate_k_d_tree(landmark_list):
 def write_k_d_tree(k):
     with open(f"{out_dir}/k_d_tree.h", "w") as f:
         f.write(
-f"""#ifndef K_D_TREE_HEADER
+'''#ifndef K_D_TREE_HEADER
 #define K_D_TREE_HEADER
-typedef int uint8_t;
+#include "custom_typedef.h"
+''')
+        f.write(
+f"""
 #define MAX_LEN_K_D_TREE {len(k)}
 extern uint8_t k_d_tree[];
 #endif

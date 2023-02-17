@@ -2,9 +2,7 @@
 #define LANDMARKS_HEADER_FILE_G
 #define LEN_LANDMARKS 40
 
-typedef float float32_t;
-typedef int uint32_t;
-typedef int uint8_t;
+#include "custom_typedef.h"
         
 typedef struct {
     float32_t x;
