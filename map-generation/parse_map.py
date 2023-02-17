@@ -42,12 +42,12 @@ def write_landmarks_header(landmark_list, adj_dict, dist_dict, landmarks):
         ''')
         f.write("""
 typedef struct {
-    float32_t x;
-    float32_t y;
+    float_t x;
+    float_t y;
     char name[48];
     uint32_t list_len;
     uint8_t* adj_list;
-    float32_t* dist_list;
+    float_t* dist_list;
 } landmark_t;
         """)
         f.write("\n\n")
@@ -55,7 +55,7 @@ typedef struct {
             to_write = f"extern uint8_t {landmarks[key]['adj_list']}[];\n"
             f.write(to_write)
         for key, value in dist_dict.items():
-            to_write = f"extern float32_t {landmarks[key]['dist_list']}[];\n"
+            to_write = f"extern float_t {landmarks[key]['dist_list']}[];\n"
             f.write(to_write)
         f.write("extern landmark_t landmarks[];\n")
         f.write("#endif //LANDMARKS_HEADER_FILE_G\n")
@@ -70,7 +70,7 @@ def write_landmarks_c(landmark_list, adj_dict, dist_dict, landmarks):
             f.write(to_write)
         for key, value in dist_dict.items():
             array_string = "{" + value.__str__()[1:-1] + "}"
-            to_write = f"float32_t {landmarks[key]['dist_list']}[] = {array_string};\n"
+            to_write = f"float_t {landmarks[key]['dist_list']}[] = {array_string};\n"
             f.write(to_write)
         f.write("landmark_t landmarks[] = {\n")
         for d in landmark_list:
@@ -88,8 +88,8 @@ def generate_structs(G):
     landmarks = {}
     i = 0
     for node, data in G.nodes(data=True):
-        x = round(data["proj_x"], 8)
-        y = round(data["proj_y"], 8)
+        x = round(data["x"], 10)
+        y = round(data["y"], 10)
         name = data["name"]
         name = re.sub("[\(\[].*?[\)\]]", "", name).lower().strip()
         name = re.sub("-|_", " ", name)

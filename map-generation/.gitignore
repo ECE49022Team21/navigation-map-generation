@@ -5,3 +5,4 @@ venv
 *.osm
 lib
 a.out
+*.png

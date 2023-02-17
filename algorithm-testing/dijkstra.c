@@ -31,7 +31,7 @@ void swap(uint8_t* heap, int first_heap_index, int second_heap_index) {
     heap[second_heap_index] = temp;
 }
 
-void shift_up(uint8_t* heap, int heap_index, float32_t* dist, int* node_heap_index) {
+void shift_up(uint8_t* heap, int heap_index, float_t* dist, int* node_heap_index) {
     int parent_index = parent(heap_index);
     while (heap_index > 0 && dist[heap[parent_index]] > dist[heap[heap_index]]) {
         node_heap_index[heap[parent_index]] = heap_index;
@@ -42,7 +42,7 @@ void shift_up(uint8_t* heap, int heap_index, float32_t* dist, int* node_heap_ind
     }
 }
 
-void shift_down(uint8_t* heap, int size, int heap_index, float32_t* dist, int* node_heap_index) {
+void shift_down(uint8_t* heap, int size, int heap_index, float_t* dist, int* node_heap_index) {
     int loop;
     do {
         loop = 0;
@@ -64,14 +64,14 @@ void shift_down(uint8_t* heap, int size, int heap_index, float32_t* dist, int* n
     } while (loop);
 }
 
-void insert(uint8_t* heap, int* size, uint8_t node, float32_t* dist, int* node_heap_index) {
+void insert(uint8_t* heap, int* size, uint8_t node, float_t* dist, int* node_heap_index) {
     *size = *size + 1;
     heap[*size] = node;
     node_heap_index[node] = *size;
     shift_up(heap, *size, dist, node_heap_index);
 }
 
-uint8_t extract_min(uint8_t* heap, int* size, float32_t* dist, int* node_heap_index) {
+uint8_t extract_min(uint8_t* heap, int* size, float_t* dist, int* node_heap_index) {
     // WARNING: does not check if empty
     uint8_t result = heap[0];
     heap[0] = heap[*size];
@@ -147,7 +147,7 @@ void print_node_heap_index(int* heap) {
     printf("\n");
 }
 
-void print_dist(float32_t* dist) {
+void print_dist(float_t* dist) {
     printf("DIST\n");
     for (int i = 0; i < LEN_LANDMARKS; i++) {
         printf("%f, ", dist[i]);
@@ -169,7 +169,7 @@ void dijkstra(int source, int destination) {
     int size = -1; // WARNING: size starts at -1 so size 0 has 1 element!
 
     //Dijkstra data
-    float32_t dist[LEN_LANDMARKS];
+    float_t dist[LEN_LANDMARKS];
     int prev[LEN_LANDMARKS];
 
     int node_heap_index[LEN_LANDMARKS];
@@ -196,7 +196,7 @@ void dijkstra(int source, int destination) {
         //print_node_heap_index(node_heap_index);
         for (int i = 0; i < landmarks[u].list_len; i++) {
             int v = landmarks[u].adj_list[i];
-            float32_t alt = dist[u] + landmarks[u].dist_list[i];
+            float_t alt = dist[u] + landmarks[u].dist_list[i];
             if (alt < dist[v]) {
                 dist[v] = alt;
                 prev[v] = u;
