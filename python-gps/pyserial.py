@@ -14,7 +14,7 @@ def main():
         while True:
             start = time.perf_counter()
             raw_data, parsed_data = nmr.read()
-            print(parsed_data)
+            #print(parsed_data)
             print(raw_data)
             #continue
             if parsed_data.msgID == 'GGA':

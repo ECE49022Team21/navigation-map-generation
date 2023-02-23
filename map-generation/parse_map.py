@@ -48,6 +48,7 @@ typedef struct {
     uint32_t list_len;
     uint8_t* adj_list;
     float_t* dist_list;
+    float_t buffer_distance;
 } landmark_t;
         """)
         f.write("\n\n")
@@ -78,7 +79,8 @@ def write_landmarks_c(landmark_list, adj_dict, dist_dict, landmarks):
             f.write("{ ")
             struct_string = f" .x = {d['x']}, .y = {d['y']}," + \
                             f" .name = " + '"' + d['name'] + '",' + \
-                            f" .list_len = {d['list_len']}, .adj_list = {d['adj_list']}, .dist_list = {d['dist_list']}"
+                            f" .list_len = {d['list_len']}, .adj_list = {d['adj_list']}, .dist_list = {d['dist_list']}," + \
+                            f" .buffer_distance = {d['buffer_distance']}"
             f.write(struct_string)
             f.write(" },\n")
         f.write("};\n")
@@ -90,6 +92,7 @@ def generate_structs(G):
     for node, data in G.nodes(data=True):
         x = round(data["x"], 10)
         y = round(data["y"], 10)
+        buffer_distance = round(data["buffer"], 10)
         name = data["name"]
         name = re.sub("[\(\[].*?[\)\]]", "", name).lower().strip()
         name = re.sub("-|_", " ", name)
@@ -104,7 +107,8 @@ def generate_structs(G):
             "name": name,
             "list_len": list_len,
             "adj_list": adj_list,
-            "dist_list": dist_list
+            "dist_list": dist_list,
+            "buffer_distance": buffer_distance
         }
         i = i + 1
     adj_dict = {}
@@ -249,6 +253,7 @@ def create_map(buildings, centroids, pathways, G):
     labels = {}
     for u, v, data in G.edges(data=True):
         labels[(u, v)] = round(data["dist"])
+    fig.savefig(f"{out_dir}/simple_map.png")
     networkx.draw_networkx_edges(G, pos=pos)
     networkx.draw_networkx_edge_labels(
         G, pos=pos, edge_labels=labels, font_size=7, alpha=0.5)
@@ -358,6 +363,21 @@ def main():
             if dist < 100:
                 G.add_edge(node, other_node, dist=dist, title=dist)
 
+    # Plot exteriors
+    fig, ax = plt.subplots(1, 1, figsize=(20, 20))
+    exteriors = buildings['geometry'].exterior
+    print(exteriors)
+    exteriors.plot(ax=ax)
+    fig.savefig(f"{out_dir}/exteriors.png")
+
+    # Find buffer distance from centroid to building exterior
+    for node, data in G.nodes(data=True):
+        centroid = transform(project.transform, data["centroid"])
+        shape = transform(project.transform, other_data["geometry"])
+        print(f"Distance from centroid to {data['name']}: {centroid.distance(shape.exterior)}")
+        print(f"Hausdorff Distance from centroid to {data['name']}: {centroid.hausdorff_distance(shape.exterior)}")
+        data["buffer"] = (centroid.distance(shape.exterior) + centroid.hausdorff_distance(shape.exterior)) / 2
+        data["buffer"] = (data["buffer"] * 0.0006213711922)**2
     # update to epsg:26913
     for node, data in G.nodes(data=True):
         new_centroid = transform(project.transform, data["centroid"])
