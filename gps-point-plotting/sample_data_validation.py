@@ -7,7 +7,7 @@ import pyproj
 
 
 def main():
-    filename = "sample_output_home"
+    filename = "sample_output_home.log"
 
     with open(filename) as f:
         lines = f.readlines()
